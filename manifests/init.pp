@@ -16,23 +16,23 @@ class mini_postgres {
       package {[
         "libpq-dev",
         "libpq5",
-        "postgresql-client-8.4",
+        "postgresql-client-9.2",
         "postgresql-common",
         "postgresql-client-common",
-        "postgresql-contrib-8.4"
+        "postgresql-contrib-9.2"
         ]:
         ensure  => present,
       }
 
       package{"postgresql":
         ensure => present,
-        name => "postgresql-8.4",
+        name => "postgresql-9.2",
         notify => Exec["pg_createcluster in utf8"],
       }
 
       # re-create the cluster in UTF8
       exec {"pg_createcluster in utf8" :
-        command => "pg_dropcluster --stop 8.4 main && pg_createcluster -e UTF8 -d ${data_dir}/8.4/main --start 8.4 main",
+        command => "pg_dropcluster --stop 9.2 main && pg_createcluster -e UTF8 --locale=en_US.utf8 -d ${data_dir}/9.2/main --start 9.2 main",
         onlyif => "test \$(su -c \"psql -tA -c 'SELECT count(*)=3 AND min(encoding)=0 AND max(encoding)=0 FROM pg_catalog.pg_database;'\" postgres) = t",
         user => root,
         timeout => 60,
@@ -40,7 +40,7 @@ class mini_postgres {
     }
 
     default: {
-      fail "postgresql 8.4 not available for ${operatingsystem}/${lsbdistcodename}"
+      fail "postgresql 9.2 not available for ${operatingsystem}/${lsbdistcodename}"
     }
   }
 
