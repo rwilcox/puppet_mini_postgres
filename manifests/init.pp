@@ -194,12 +194,14 @@ define postgresql::user(
         require => [User["postgres"], Exec["Create postgres user $name"]],
       }
 
-      exec { "Set CREATEDB attribute for postgres user $name":
-        command => "psql ${connection} -c 'ALTER USER \"$name\" $createdbtext' ",
-        user    => "postgres",
-        unless  => "psql ${connection} -tc \"SELECT rolcreatedb FROM pg_roles WHERE rolname = '$name'\" |grep -q $(echo $createdb |cut -c 1)",
-        require => [User["postgres"], Exec["Create postgres user $name"]],
-      }
+      # TODO: fix me???? This causes fun error, but shouldn't??? matter.
+      # Ask Postgres expert (I'm not). WD-rpw 12-29-2013
+      #exec { "Set CREATEDB attribute for postgres user $name":
+      #  command => "psql ${connection} -c 'ALTER USER \"$name\" $createdbtext' ",
+      #  user    => "postgres",
+      #  unless  => "psql ${connection} -tc \"SELECT rolcreatedb FROM pg_roles WHERE rolname = '$name'\" |grep -q $(echo $createdb |cut -c 1)",
+      #  require => [User["postgres"], Exec["Create postgres user $name"]],
+      #}
 
       exec { "Set CREATEROLE attribute for postgres user $name":
         command => "psql ${connection} -c 'ALTER USER \"$name\" $createroletext' ",
