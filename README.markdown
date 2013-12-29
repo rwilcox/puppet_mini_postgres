@@ -8,4 +8,4 @@ It's meant specifically for Ubuntu Lucid,  for example.
 
 It's also small enough you can fix it when something goes wrong (unlike the puppet-postgresql package) - even if you don't really know Puppet.
 
-
+Requires: 'apt' puppet package

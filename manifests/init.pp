@@ -1,3 +1,6 @@
+include 'apt'
+
+
 class mini_postgres {
 
   user { "postgres":
@@ -13,6 +16,12 @@ class mini_postgres {
 
   case $lsbdistcodename {
     "lucid" : {
+
+      # Use official PostgresQL PPA to pull in new Postgres in Lucid
+      apt::ppa { 'ppa:pitti/postgresql':
+        options => ""
+      }
+
       package {[
         "libpq-dev",
         "libpq5",
@@ -22,12 +31,14 @@ class mini_postgres {
         "postgresql-contrib-9.2"
         ]:
         ensure  => present,
+        require => Apt::Ppa["ppa:pitti/postgresql"]
       }
 
       package{"postgresql":
         ensure => present,
         name => "postgresql-9.2",
         notify => Exec["pg_createcluster in utf8"],
+        require => Apt::Ppa["ppa:pitti/postgresql"]
       }
 
       # re-create the cluster in UTF8
@@ -37,6 +48,8 @@ class mini_postgres {
         user => root,
         timeout => 60,
       }
+
+
     }
 
     default: {
