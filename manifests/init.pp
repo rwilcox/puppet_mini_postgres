@@ -15,7 +15,7 @@ class mini_postgres {
   }
 
   case $lsbdistcodename {
-    "lucid" : {
+    "lucid", "precise" : {
 
       # Use official PostgresQL PPA to pull in new Postgres in Lucid
       apt::ppa { 'ppa:pitti/postgresql':
