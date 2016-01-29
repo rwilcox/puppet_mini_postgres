@@ -17,9 +17,23 @@ class mini_postgres {
   case $lsbdistcodename {
     "lucid", "precise" : {
 
+      # for apt add-apt-repository
+      package{"add-apt":
+        name => "python-software-properties",
+        ensure => present
+      }
+
       # Use official PostgresQL PPA to pull in new Postgres in Lucid
       apt::ppa { 'ppa:pitti/postgresql':
-        options => ""
+        options => "",
+        require => Package["add-apt"],
+        notify => Exec["apt-get update"]
+      }
+
+      exec {"apt-get update":
+        command => "/usr/bin/apt-get update",
+        user => "root",
+        logoutput => on_failure
       }
 
       package {[
@@ -31,7 +45,7 @@ class mini_postgres {
         "postgresql-contrib-9.2"
         ]:
         ensure  => present,
-        require => Apt::Ppa["ppa:pitti/postgresql"]
+        require => [ Apt::Ppa["ppa:pitti/postgresql"], Exec["apt-get update"] ]
       }
 
       package{"postgresql":
