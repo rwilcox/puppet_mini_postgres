@@ -9,31 +9,41 @@ class mini_postgres {
   }
 
 
-  $data_dir = $postgresql_data_dir ? {
-    "" => "/var/lib/postgresql",
-    default => $postgresql_data_dir,
-  }
+  $data_dir = "/var/lib/postgresql"
+
+#  $data_dir = $postgresql_data_dir ? {
+#    "" => "/var/lib/postgresql",
+#    default => $postgresql_data_dir,
+#  }
 
   case $lsbdistcodename {
-    "lucid", "precise" : {
+    "lucid", "precise", "trusty" : {
+
+      package{"software-properties-common":
+      	ensure => present
+      }
 
       # for apt add-apt-repository
       package{"add-apt":
         name => "python-software-properties",
-        ensure => present
+        ensure => present,
+        require => Package["software-properties-common"]
       }
 
-      # Use official PostgresQL PPA to pull in new Postgres in Lucid
-      apt::ppa { 'ppa:pitti/postgresql':
-        options => "",
-        require => Package["add-apt"],
-        notify => Exec["apt-get update"]
-      }
+	apt::key {'postgres':
+		id => "ACCC4CF8",
+		source => "https://www.postgresql.org/media/keys/ACCC4CF8.asc",
+		require => Package["add-apt"]
+    }
 
-      exec {"apt-get update":
-        command => "/usr/bin/apt-get update",
-        user => "root",
-        logoutput => on_failure
+	apt::source { 'postgres':
+	  location => 'http://apt.postgresql.org/pub/repos/apt/',
+	  repos  => "main",
+	  release  => "${lsbdistcodename}-pgdg",
+	  include  => {
+		'deb' => true,
+	  },
+	  require => [ Apt::Key['postgres'] ]
       }
 
       package {[
@@ -45,7 +55,7 @@ class mini_postgres {
         "postgresql-contrib-9.2"
         ]:
         ensure  => present,
-        require => [ Apt::Ppa["ppa:pitti/postgresql"], Exec["apt-get update"] ]
+        require => [ Apt::Source["postgres"] ]
       }
 
       package{"postgresql":
